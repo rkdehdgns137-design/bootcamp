@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { DecodeReport } from '../types';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, AlertCircle, Sparkles, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Mascot } from './Mascot';
 
 interface ResultViewProps {
   report: DecodeReport;
   onReset: () => void;
+  onRetry?: () => void;
   onShowToast: (message: string) => void;
 }
 
-export const ResultView: React.FC<ResultViewProps> = ({ report, onReset, onShowToast }) => {
+export const ResultView: React.FC<ResultViewProps> = ({ report, onReset, onRetry, onShowToast }) => {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = (text: string, key: string, label: string) => {
@@ -43,6 +45,118 @@ export const ResultView: React.FC<ResultViewProps> = ({ report, onReset, onShowT
     }
     onShowToast('결과 요약이 클립보드에 복사되었습니다!');
   };
+
+  // Dedicated View for Decode Failure with Apology & Reason Explanation
+  if (report.isDecodeFailed) {
+    return (
+      <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-300">
+        {/* 1. Apology & Failure Announcement Header */}
+        <div className="bg-white rounded-[26px] p-6 shadow-sm border border-stone-200/80 text-center relative overflow-hidden">
+          <div className="inline-flex p-3 rounded-2xl bg-amber-50/80 border border-amber-200/60 mb-3.5">
+            <Mascot size={58} mood="apologetic" />
+          </div>
+          <div>
+            <span className="inline-block px-3 py-1 rounded-full bg-rose-50 text-[#e11d48] font-bold text-xs mb-2 border border-rose-100">
+              ⚠️ 해독 불가 안내
+            </span>
+          </div>
+          <h2 className="text-stone-900 font-black text-xl tracking-tight mb-2">
+            대화 내용을 해독하지 못했습니다
+          </h2>
+
+          {/* Sincere Apology Callout */}
+          <div className="mt-3.5 p-4 rounded-2xl bg-[#fff7f5] border border-[#ff5745]/20 text-left space-y-1">
+            <div className="text-xs font-bold text-[#c53020] flex items-center space-x-1">
+              <span>🙇‍♂️</span>
+              <span>사과 말씀드립니다</span>
+            </div>
+            <p className="text-stone-800 font-semibold text-xs sm:text-[13px] leading-relaxed">
+              {report.apology ||
+                '대화 내용을 명확하게 판독해 드리지 못해 진심으로 사과드립니다. 선명한 대화 화면 캡처로 다시 시도해 주시면 정밀하게 분석해 드리겠습니다.'}
+            </p>
+          </div>
+        </div>
+
+        {/* 2. Detailed Failure Reason */}
+        <div className="bg-white rounded-[26px] p-6 shadow-sm border border-stone-200/80 space-y-3.5">
+          <div className="flex items-center space-x-2 text-stone-800 font-bold text-sm">
+            <AlertCircle className="w-4 h-4 text-amber-500" />
+            <span>해독 실패 상세 사유</span>
+          </div>
+          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200/80 text-stone-800 text-xs sm:text-sm font-semibold leading-relaxed">
+            {report.failureReason ||
+              '업로드된 이미지에서 카카오톡 또는 메신저 대화 말풍선이나 텍스트를 감지할 수 없습니다.'}
+          </div>
+
+          {report.imagePreview && (
+            <div className="pt-2 border-t border-stone-100 space-y-2">
+              <div className="flex items-center justify-between text-xs text-stone-500 font-bold">
+                <span>분석을 시도한 업로드 캡처</span>
+                <span className="text-[11px] text-stone-400 truncate max-w-[180px]">
+                  {report.imageName || '캡처 이미지'}
+                </span>
+              </div>
+              <div className="relative rounded-xl overflow-hidden border border-stone-200 max-h-48 bg-stone-900/5 flex items-center justify-center p-2">
+                <img
+                  src={report.imagePreview}
+                  alt="Upload preview"
+                  className="max-h-44 object-contain rounded-lg w-auto"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 3. Practical Guidance Checklist */}
+        <div className="bg-[#fef9ee] rounded-[26px] p-6 border border-[#fde8c3]/80 space-y-3">
+          <div className="flex items-center space-x-2 text-[#b45309] font-bold text-xs tracking-tight">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>이렇게 캡처하시면 정확하게 해독할 수 있어요</span>
+          </div>
+          <ul className="text-stone-800 text-xs sm:text-[13px] space-y-2.5 font-medium">
+            <li className="flex items-start space-x-2">
+              <span className="text-[#ff5745] font-black text-sm leading-none">•</span>
+              <span>
+                <strong>대화 말풍선과 텍스트</strong>가 온전히 보이는 메신저 화면 스크린샷
+              </span>
+            </li>
+            <li className="flex items-start space-x-2">
+              <span className="text-[#ff5745] font-black text-sm leading-none">•</span>
+              <span>
+                다른 기기 화면을 카메라로 찍은 사진보다는 <strong>기기 자체 캡처 기능</strong> 권장
+              </span>
+            </li>
+            <li className="flex items-start space-x-2">
+              <span className="text-[#ff5745] font-black text-sm leading-none">•</span>
+              <span>
+                글씨가 너무 작거나 흐릿하지 않은 <strong>원본 고화질 이미지</strong>
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        {/* 4. Action Buttons */}
+        <div className="flex items-center space-x-3 pt-2">
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="flex-1 py-3.5 px-4 bg-[#e9e8e4] hover:bg-[#deddd8] active:scale-[0.98] text-stone-800 font-bold text-sm rounded-2xl transition-all shadow-xs text-center flex items-center justify-center space-x-1.5"
+            >
+              <RefreshCw className="w-4 h-4 text-stone-600" />
+              <span>다시 시도</span>
+            </button>
+          )}
+          <button
+            onClick={onReset}
+            className="flex-1 py-3.5 px-4 bg-[#ff5745] hover:bg-[#e04433] active:scale-[0.98] text-white font-bold text-sm rounded-2xl transition-all shadow-sm text-center flex items-center justify-center space-x-1.5"
+          >
+            <ArrowLeft className="w-4 h-4 text-white" />
+            <span>다른 캡처 업로드하기</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-300">

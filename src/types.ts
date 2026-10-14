@@ -1,4 +1,12 @@
-export type RelationshipType = '연애·썸' | '직장·업무' | '친구·지인' | '일상·기타';
+export type RelationshipType =
+  | '연애·썸'
+  | '소개팅·애프터'
+  | '전연인·재회'
+  | '직장·업무'
+  | '친구·지인'
+  | '가족·친척'
+  | '중고거래·협상'
+  | '일상·기타';
 
 export interface ReplyOption {
   title: string;
@@ -22,6 +30,9 @@ export interface DecodeReport {
   mbti?: string;
   imagePreview?: string;
   imageName?: string;
+  isDecodeFailed?: boolean;
+  failureReason?: string;
+  apology?: string;
   affectionScore: number;
   affectionLevel: string;
   tags: string[];

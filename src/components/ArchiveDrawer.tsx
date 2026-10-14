@@ -19,6 +19,8 @@ export const ArchiveDrawer: React.FC<ArchiveDrawerProps> = ({
   onClearHistory,
   onShowToast,
 }) => {
+  const [isConfirmingClear, setIsConfirmingClear] = React.useState(false);
+
   if (!isOpen) return null;
 
   return (
@@ -35,21 +37,41 @@ export const ArchiveDrawer: React.FC<ArchiveDrawerProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             {history.length > 0 && (
-              <button
-                onClick={() => {
-                  if (confirm('보관함의 모든 기록을 삭제하시겠습니까?')) {
-                    onClearHistory();
-                    onShowToast('보관함이 비워졌습니다.');
-                  }
-                }}
-                className="text-xs text-stone-500 hover:text-red-500 p-1.5 transition"
-                title="전체 삭제"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              isConfirmingClear ? (
+                <div className="flex items-center space-x-1 bg-red-50 px-2 py-1 rounded-lg border border-red-200">
+                  <span className="text-[11px] font-bold text-red-600">삭제할까요?</span>
+                  <button
+                    onClick={() => {
+                      onClearHistory();
+                      setIsConfirmingClear(false);
+                      onShowToast('보관함이 비워졌습니다.');
+                    }}
+                    className="text-[11px] font-bold text-white bg-red-500 hover:bg-red-600 px-1.5 py-0.5 rounded transition"
+                  >
+                    삭제
+                  </button>
+                  <button
+                    onClick={() => setIsConfirmingClear(false)}
+                    className="text-[11px] font-medium text-stone-500 hover:text-stone-700 px-1 py-0.5 rounded transition"
+                  >
+                    취소
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsConfirmingClear(true)}
+                  className="text-xs text-stone-500 hover:text-red-500 p-1.5 transition"
+                  title="전체 삭제"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )
             )}
             <button
-              onClick={onClose}
+              onClick={() => {
+                setIsConfirmingClear(false);
+                onClose();
+              }}
               className="p-1.5 rounded-full hover:bg-stone-200 text-stone-500 transition"
             >
               <X className="w-5 h-5" />
@@ -80,9 +102,15 @@ export const ArchiveDrawer: React.FC<ArchiveDrawerProps> = ({
                     <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-stone-100 text-stone-700">
                       {item.relationshipContext}
                     </span>
-                    <span className="text-xs font-bold text-[#ff5745]">
-                      {item.affectionScore}% ({item.affectionLevel})
-                    </span>
+                    {item.isDecodeFailed ? (
+                      <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
+                        해독 실패 안내
+                      </span>
+                    ) : (
+                      <span className="text-xs font-bold text-[#ff5745]">
+                        {item.affectionScore}% ({item.affectionLevel})
+                      </span>
+                    )}
                     <span className="text-[11px] text-stone-400">{item.timestamp}</span>
                   </div>
                   <p className="text-xs font-medium text-stone-700 line-clamp-1">
