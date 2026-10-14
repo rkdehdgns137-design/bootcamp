@@ -1,0 +1,6 @@
+{
+  "name": "톡해독 - AI 챗 프로파일러",
+  "description": "대화 캡처를 올리고 상대방의 진짜 속마음과 호감도, 최적의 맞춤 답장을 해독하는 AI 프로파일러",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
